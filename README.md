@@ -1,42 +1,42 @@
-# Cloud Security Fieldbook
+# CloudSecAtlas
 
-面向云身份、资源关系、攻击路径、检测和修复的知识与研究仓库。内容先以 AWS 建模，再映射 Azure、GCP 和 Kubernetes。
+A cloud security knowledge and research repository organized around identities, resource relationships, attack paths, detection, and remediation. Concepts are modeled in AWS first, then mapped to Azure, GCP, and Kubernetes.
 
-完整能力地图与阶段出口见 [`ROADMAP.md`](ROADMAP.md)。
+See [`ROADMAP.md`](ROADMAP.md) for the complete capability map and stage completion criteria.
 
-## 内容结构
+## Structure
 
-- [`foundations/`](foundations/)：共享责任、账号/组织、控制面与数据面。
-- [`iam/`](iam/)：策略评估、信任关系、临时凭据和权限提升路径。
-- [`services/`](services/)：网络、计算、存储、数据库、Serverless、KMS 和 Secrets。
-- [`containers-k8s/`](containers-k8s/)：镜像、运行时、ServiceAccount、RBAC 和工作负载边界。
-- [`detection-response/`](detection-response/)：审计日志、检测、调查、遏制和恢复。
-- [`labs/`](labs/)：授权且成本可控的实验。
-- [`references/`](references/)：筛选后的外部资料和工具定位。
-- [`templates/`](templates/)：统一实验记录模板。
+- [`foundations/`](foundations/): shared responsibility, accounts and organizations, control planes, and data planes
+- [`iam/`](iam/): policy evaluation, trust relationships, temporary credentials, and privilege-escalation paths
+- [`services/`](services/): networking, compute, storage, databases, serverless, KMS, and secrets
+- [`containers-k8s/`](containers-k8s/): images, runtimes, ServiceAccounts, RBAC, and workload boundaries
+- [`detection-response/`](detection-response/): audit logs, detection, investigation, containment, and recovery
+- [`labs/`](labs/): authorized, cost-controlled experiments
+- [`references/`](references/): curated external resources and clear tool positioning
+- [`templates/`](templates/): standardized experiment templates
 
-## 专题入口
+## Entry Points
 
-- [`services/`](services/)：基础设施、消息系统和身份边界。
-- [`references/`](references/)：云安全知识库与靶场入口，以及经过筛选的公开项目。
+- [`services/`](services/): infrastructure, messaging systems, and identity boundaries
+- [`references/`](references/): cloud security knowledge bases, training ranges, and curated public projects
 
-## 关注主线
+## Core Questions
 
-1. Principal 拥有什么有效权限，为什么拥有？
-2. 资源是否暴露，网络路径是否真实可达？
-3. 工作负载可以取得什么临时凭据和秘密？
-4. 哪些信任关系能串成跨服务、跨角色或跨账号攻击路径？
-5. 哪些日志能够证明行为，如何遏制并验证恢复？
+1. What effective permissions does a principal have, and why?
+2. Is a resource exposed, and is the network path actually reachable?
+3. Which temporary credentials and secrets can a workload obtain?
+4. Which trust relationships form cross-service, cross-role, or cross-account attack paths?
+5. Which logs can prove the behavior, and how can containment and recovery be verified?
 
-## 仓库边界
+## Repository Scope
 
-- 本仓库保存知识模型、实验记录、攻击路径、检测规则、修复验证和研究问题。
-- “掌握”必须留下证据：能解释、能复现、能检测或修复，并能做回归验证。
-- 一个方向形成可独立演示、测试和评价的系统后，再从 Fieldbook 孵化成单独项目仓库。
+- This repository stores knowledge models, experimental records, attack paths, detection rules, remediation validation, and research questions.
+- Mastery requires evidence: the behavior can be explained, reproduced, detected or remediated, and regression-tested.
+- Once a topic becomes an independently demonstrable, testable, and evaluable system, it should graduate from CloudSecAtlas into a separate project repository.
 
-## 安全与成本约束
+## Safety and Cost Controls
 
-- 仅使用本人账号、专用实验账号或明确授权环境。
-- 默认最小权限、预算告警、短生命周期资源和显式销毁步骤。
-- 不提交 Access Key、Session Token、Kubeconfig、Terraform state 或未脱敏日志。
-- 攻击模拟优先使用 dry-run、计划输出和官方/本地靶场。
+- Use only personal accounts, dedicated lab accounts, or explicitly authorized environments.
+- Default to least privilege, budget alerts, short-lived resources, and explicit teardown procedures.
+- Never commit access keys, session tokens, kubeconfig files, Terraform state, or unsanitized logs.
+- Prefer dry runs, plan output, and official or local training ranges for attack simulation.

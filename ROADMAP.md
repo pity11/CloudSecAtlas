@@ -21,6 +21,8 @@
 
 **阶段出口：** 不依赖控制台截图，能用 CLI/API 解释一个资源如何被创建、授权、访问、审计和删除。
 
+**专题笔记：** [云计算与 AWS 资源模型](foundations/cloud-resource-model.md)
+
 ## B. 身份、权限与信任关系
 
 - User、Role、Service Principal、Managed/Workload Identity 的区别。
@@ -32,6 +34,8 @@
 
 **候选项目：** `cloud-identity-graph`——将身份、策略、资源和信任关系归一化为可查询的有效权限/攻击路径图。
 
+**专题笔记：** [AWS IAM 与 STS](iam/aws-iam-sts.md)
+
 ## C. 网络、数据与托管服务安全
 
 - VPC/VNet、子网、路由、网关、安全组、NACL、防火墙和私网端点。
@@ -41,6 +45,8 @@
 - DNS、负载均衡、API Gateway、CDN/WAF 对真实流量路径的影响。
 
 **阶段出口：** 能从“入口—身份—服务—数据—日志”完整解释并修复一条攻击路径。
+
+**专题笔记：** [云网络、数据与工作负载安全](services/cloud-network-data-workload-security.md)
 
 ## D. IaC、CI/CD 与软件供应链
 
@@ -53,6 +59,8 @@
 
 **阶段出口：** 能让一个错误配置在提交阶段失败，并证明部署身份没有不必要权限。
 
+**专题笔记：** [IaC、CI/CD 与软件供应链](services/iac-cicd-supply-chain-security.md)
+
 ## E. 容器与 Kubernetes 安全
 
 - 镜像分层、能力集、namespace/cgroup、挂载、socket 与特权容器。
@@ -62,6 +70,8 @@
 - 托管 Kubernetes 的云 IAM、集群 RBAC 与网络策略交叉关系。
 
 **候选项目：** `k8s-identity-lab`——用最小集群呈现 ServiceAccount、RBAC、工作负载身份和云 IAM 的组合路径。
+
+**专题笔记：** [Kubernetes 与工作负载身份](containers-k8s/kubernetes-workload-identity.md)
 
 ## F. 安全态势、检测与响应
 
@@ -73,6 +83,8 @@
 - 使用 Prowler、Stratus Red Team 等工具时理解其模型，而非只保存扫描结果。
 
 **候选项目：** `cloud-detection-validation-lab`——以安全原子行为生成日志，自动验证检测、调查线索和修复状态。
+
+**专题笔记：** [云日志、检测与事件响应](detection-response/cloud-logging-detection-incident-response.md)
 
 ## G. 授权攻击模拟与攻击路径分析
 

@@ -10,6 +10,29 @@ tags: [Security, Middleware, Database, Container]
 
 只绑定回环地址的服务仍需审计：获得任意低权限 shell、SSRF、端口转发或同机容器后，可达性边界会变化。反过来，外网不可达不能补偿弱认证，因为横向移动后仍会暴露。
 
+## 端口可达性、协议匹配与最小探针
+
+`open` 只表示 TCP 连接被某个进程接受；Nmap 的 `SERVICE VERSION`、端口号和 Banner 都只是服务识别假设。浏览器只能正确理解 HTTP/HTTPS，不能用“浏览器打不开 6379”推断 Redis 不可达。若 curl 向非 HTTP 服务发送 `GET / HTTP/1.1`，收到协议错误、空响应或连接重置，通常说明协议不匹配，而不是网络不通。
+
+每种服务应使用对应协议的最小、低影响探针：
+
+```bash
+# TCP handshake
+nc -vz -w 3 <TARGET> <PORT>
+
+# Redis RESP PING
+printf '*1\r\n$4\r\nPING\r\n' | nc -w 3 <TARGET> 6379
+
+# HTTP status, headers, and body
+curl -i --max-time 5 http://<TARGET>:<PORT>/
+```
+
+Redis RESP 是长度前缀协议。上述请求表示一个只包含 `PING` 的数组；`+PONG` 通常表示正常响应，`-NOAUTH` 表示服务可达但需要认证。超时、拒绝连接和协议错误必须分别记录。
+
+服务识别应结合协议行为、标准命令覆盖、错误格式、进程路径、启动参数、包管理器归属和文件哈希。某服务自称 Redis 7.x，但缺少 `ACL`、`MODULE`、`EVAL` 等大量标准命令，或 `INFO` 返回固定伪造字段时，应考虑自定义模拟器、蜜罐或后门，不能直接套用 Redis CVE。
+
+对非标准协议程序，若能通过授权文件读取取得正在运行的二进制，可使用 [Go 二进制逆向与运行时元数据](https://github.com/pity11/WebSecAtlas/blob/main/code-audit/go-runtime-metadata.md) 的流程验证命令分发、认证和危险系统调用。隐藏命令只有在控制流确实到达文件写入、代码加载或命令执行 sink 时，才构成安全结论。
+
 ## 文件服务
 
 - WebDAV：可写目录若同时允许 Web 服务器执行脚本，就从“上传”变成代码执行；若服务跟随可控符号链接，还可能越过共享根。
@@ -46,7 +69,9 @@ MySQL UDF 允许服务器从 `plugin_dir` 加载本地共享库并注册 SQL 函
 
 无认证 Redis、NATS、RabbitMQ 或 MQTT 可能泄露数据、凭据和内部主题，并允许发布任务或改配置。危险程度由消费者决定：一条普通消息若被高权限 worker 当成命令、模板或文件路径，消息写权限就会升级为执行权限。
 
-需要网络隔离、认证与 TLS、主题/队列级 ACL、消息 schema、消费者端授权和幂等性；秘密不能长期作为普通消息或 KV 明文保存。NATS/SIP 细节见 [消息总线与 SIP-mTLS 安全](message-bus-sip-mtls-security.md)。
+Redis 枚举应先从只读、低影响命令开始，例如 `PING`、`INFO`、`DBSIZE`、`SCAN` 和当前身份或 ACL 查询。不要因为发现未认证访问就执行 `FLUSHALL`、改写 `dir/dbfilename`、写 SSH key 或加载模块。尤其要区分真实 Redis 与只实现少量 RESP 命令的自定义服务：协议兼容不等于产品和版本相同，Banner 也不构成 CVE 证据。
+
+需要网络隔离、认证与 TLS、主题或队列级 ACL、消息 schema、消费者端授权和幂等性；秘密不能长期作为普通消息或 KV 明文保存。NATS、MQTT 和 SIP 细节见 [消息总线与 SIP-mTLS 安全](message-bus-sip-mtls-security.md)。
 
 ## 后门与“版本匹配”的证据标准
 
@@ -55,4 +80,5 @@ MySQL UDF 允许服务器从 `plugin_dir` 加载本地共享库并注册 SQL 函
 ## 关联笔记
 
 - [消息总线与 SIP-mTLS 安全](message-bus-sip-mtls-security.md)
-- [身份认证、JWT 与 OAuth 安全](https://github.com/pity11/web-security-fieldbook/blob/main/fundamentals/identity-jwt-oauth-security.md)
+- [身份认证、JWT 与 OAuth 安全](https://github.com/pity11/WebSecAtlas/blob/main/fundamentals/identity-jwt-oauth-security.md)
+- [Go 二进制逆向与运行时元数据](https://github.com/pity11/WebSecAtlas/blob/main/code-audit/go-runtime-metadata.md)

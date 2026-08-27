@@ -3,6 +3,7 @@ date: 2026-08-24
 tags:
   - Security
   - NATS
+  - MQTT
   - SIP
   - TLS
   - Protocol
@@ -56,6 +57,25 @@ NATS subject -> worker 收到消息 -> os.system()/shell=True -> 主机命令
 如果出现周期心跳，可从 subject 命名和帮助/请求响应通道推断服务职责。推断必须由响应或配置验证，不能因为主题名像 `admin` 就直接断言可执行命令。
 
 防守侧应：启用 TLS；避免明文和弱口令；每个服务使用独立身份；精确配置 publish/subscribe allowlist；禁止不必要的 `>`；管理账户与业务账户分离；定期审计 JetStream 中的持久化敏感消息。
+
+## MQTT：连接权限不等于主题权限
+
+MQTT 同样采用发布/订阅模型。安全判断必须拆成三层：
+
+```text
+能否连接 broker -> 是否通过身份认证 -> 可发布或订阅哪些 topic
+```
+
+匿名连接不必然等于全主题可读，但“允许匿名连接 + 缺少订阅 ACL”会使消息成为公开数据。MQTT 通配符中，`+` 匹配单层 topic，`#` 匹配当前层以下的所有 topic；允许不受信客户端订阅 `#`，等价于授予其观察当前和未来全局消息的能力。
+
+取证时需要区分两种稍后出现的消息：
+
+- retained message：broker 为某个 topic 保存最近一条保留消息，新订阅者可以立即收到；
+- 周期消息：由设备或任务按周期重新发布，观察时间太短可能误判为没有数据。
+
+观察窗口应覆盖已知业务周期，并记录 topic、发布频率、QoS、retain 标志和客户端身份。不能因为短时间静默就下结论，也不能无限期全量监听超出授权范围的主题。
+
+密码、SSH 凭据和长期 Token 不应进入消息体。TLS 只能保护链路，任何具有订阅权的客户端仍可读取内容。生产配置应禁用匿名访问，为每个设备或服务分配独立身份，对 publish 和 subscribe 分别配置最小 topic ACL，限制通配符订阅，轮换已暴露秘密，并审计异常全局订阅和敏感字段。
 
 ## SIP、SIPS 与 SDP
 
@@ -142,6 +162,14 @@ openssl verify -CAfile ca.crt client.crt
 - 管理 subject 是否与普通业务 subject 隔离；
 - 持久化消息中是否包含秘密。
 
+### MQTT
+
+- 是否禁用匿名连接并强制 TLS 与独立客户端身份；
+- publish 与 subscribe ACL 是否分别限制到必要 topic；
+- 普通客户端是否能使用 `#` 或越级使用 `+`；
+- retained 或周期消息中是否包含口令、Token、私钥或管理指令；
+- 消息泄露后是否同时轮换凭据并排查跨服务复用。
+
 ### SIP/mTLS
 
 - 证书链、有效期、EKU、SAN 和吊销策略是否正确；
@@ -153,4 +181,4 @@ openssl verify -CAfile ca.crt client.crt
 
 ## 关联笔记
 
-- [Web 与 API 常见漏洞原理](https://github.com/pity11/web-security-fieldbook/blob/main/fundamentals/web-api-vulnerability-principles.md)
+- [Web 与 API 常见漏洞原理](https://github.com/pity11/WebSecAtlas/blob/main/fundamentals/web-api-vulnerability-principles.md)
